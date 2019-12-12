@@ -20,10 +20,6 @@ The given interface for the application is as follows:
     You must specify using the -i option the input file.  The dataset 
     directory includes three different size input files.
 
-    You may specify the option -S to get more accurate timings (inserts 
-    synchronization after non-blocking events).  This is how we will 
-    measure your final speed. (NOT CURRENTLY IMPLEMENTED)
-
     You may specify an output file using the -o option.  You can then 
     analyse the output file however you like, including comparing it to 
     other output files using compareFiles.cc in the mri-q directory.
