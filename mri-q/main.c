@@ -55,8 +55,16 @@ main (int argc, char *argv[]) {
   float *Qr, *Qi;		/* Q signal (complex) */
   struct kValues* kVals;
 
+  float *x_d, *y_d, *z_d;
+  float *phiR_d, *phiI_d;
+  float *phiMag_d;
+  float *Qr_d, *Qi_d;
+  struct kValues* kVals;
+
   struct pb_Parameters *params;
   struct pb_TimerSet timers;
+
+  cudaError_t cuda_ret;
 
   pb_InitializeTimerSet(&timers);
 
@@ -103,7 +111,41 @@ main (int argc, char *argv[]) {
   /* Create CPU data structures */
   createDataStructsCPU(numK, numX, &phiMag, &Qr, &Qi);
   /* Create GPU data structures */
+  pb_SwitchToTimer(&timers, pb_TimerID_COPY)
   //createDataStructsGPU(numK, numX, &phiMag, &Qr, &Qi)
+
+  // Allocating device variables
+  cuda_ret = cudaMalloc((void**) &phiMag_d, numK*sizeof(float));
+  if (cuda_ret != cudaSuccess) {
+      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+  }
+
+  cuda_ret = cudaMalloc((void**) &Qr_d, numX*sizeof(float));
+  if (cuda_ret != cudaSuccess) {
+      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+  }
+
+  cuda_ret = cudaMemset(Qr_d, 0, numX * sizeof(float));
+  if (cuda_ret != cudaSuccess) {
+      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+  }
+
+  cuda_ret = cudaMalloc((void**) &Qi_d, numX*sizeof(float));
+  if (cuda_ret != cudaSuccess) {
+      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+  }
+
+  cuda_ret = cudaMemset(Qi_d, 0, numX * sizeof(float));
+  if (cuda_ret != cudaSuccess) {
+      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+  }
+
+
   //cudaDeviceSynchronize();
 
   ComputePhiMagCPU(numK, phiR, phiI, phiMag);
