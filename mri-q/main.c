@@ -35,6 +35,7 @@
 
 #include "file.h"
 #include "computeQ.cc"
+#include "computeQ.cu" // GPU code
 
 int
 main (int argc, char *argv[]) {
@@ -94,8 +95,11 @@ main (int argc, char *argv[]) {
 
   /* Create CPU data structures */
   createDataStructsCPU(numK, numX, &phiMag, &Qr, &Qi);
+  /* Create GPU data structures */
+  //createDataStructsGPU(numK, numX, &phiMag, &Qr, &Qi)
 
   ComputePhiMagCPU(numK, phiR, phiI, phiMag);
+  //ComputePhiMagGPU(numK, phiR, phiI, phiMag);
 
   kVals = (struct kValues*)calloc(numK, sizeof (struct kValues));
   int k;
