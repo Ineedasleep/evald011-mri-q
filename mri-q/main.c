@@ -34,8 +34,15 @@
 #include "parboil.h"
 
 #include "file.h"
-#include "computeQ.cc"
-#include "computeQ.cu" // GPU code
+//#include "computeQ.cc"
+#include "computeQ.cu" // GPU code, includes "computeQ.cc"
+
+#define FATAL(msg, ...) \
+    do {\
+        fprintf(stderr, "[%s:%d] "msg"\n", __FILE__, __LINE__, ##__VA_ARGS__);\
+        exit(-1);\
+    } while(0)
+
 
 int
 main (int argc, char *argv[]) {
@@ -97,9 +104,18 @@ main (int argc, char *argv[]) {
   createDataStructsCPU(numK, numX, &phiMag, &Qr, &Qi);
   /* Create GPU data structures */
   //createDataStructsGPU(numK, numX, &phiMag, &Qr, &Qi)
+  //cudaDeviceSynchronize();
 
   ComputePhiMagCPU(numK, phiR, phiI, phiMag);
+  // TODO: Copy vars from host to device
+  //cudaDeviceSynchronize();
+
   //ComputePhiMagGPU(numK, phiR, phiI, phiMag);
+  // cuda_ret = cudaDeviceSynchronize();
+	// if(cuda_ret != cudaSuccess) FATAL("Unable to launch kernel");
+
+  // TODO: Copy vars from device to host
+  //cudaDeviceSynchronize();
 
   kVals = (struct kValues*)calloc(numK, sizeof (struct kValues));
   int k;
@@ -110,6 +126,16 @@ main (int argc, char *argv[]) {
     kVals[k].PhiMag = phiMag[k];
   }
   ComputeQCPU(numK, numX, kVals, x, y, z, Qr, Qi);
+  // TODO: Copy vars from host to device 
+  //cudaDeviceSynchronize();
+
+  //ComputeQGPU(numK, numX, kVals, x, y, z, Qr, Qi);
+  // cuda_ret = cudaDeviceSynchronize();
+	// if(cuda_ret != cudaSuccess) FATAL("Unable to launch kernel");
+
+  // TODO: Copy vars from device to host
+  //cudaDeviceSynchronize();
+  
 
   if (params->outFile)
     {

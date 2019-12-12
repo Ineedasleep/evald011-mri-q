@@ -53,7 +53,7 @@ main (int argc, char *argv[]) {
     return -1;
   }
 
-  float diffCheck = .00006;
+  float diffCheck = .0006;
 
   float max = 0.00;
   float diff = 0.00;
