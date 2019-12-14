@@ -34,15 +34,7 @@
 #include "parboil.h"
 
 #include "file.h"
-//#include "computeQ.cc"
-#include "computeQ.cu" // GPU code, includes "computeQ.cc"
-
-#define FATAL(msg, ...) \
-    do {\
-        fprintf(stderr, "[%s:%d] "msg"\n", __FILE__, __LINE__, ##__VA_ARGS__);\
-        exit(-1);\
-    } while(0)
-
+#include "computeQ.cc"
 
 int
 main (int argc, char *argv[]) {
@@ -55,16 +47,8 @@ main (int argc, char *argv[]) {
   float *Qr, *Qi;		/* Q signal (complex) */
   struct kValues* kVals;
 
-  float *x_d, *y_d, *z_d;
-  float *phiR_d, *phiI_d;
-  float *phiMag_d;
-  float *Qr_d, *Qi_d;
-  struct kValues* kVals;
-
   struct pb_Parameters *params;
   struct pb_TimerSet timers;
-
-  cudaError_t cuda_ret;
 
   pb_InitializeTimerSet(&timers);
 
@@ -110,54 +94,8 @@ main (int argc, char *argv[]) {
 
   /* Create CPU data structures */
   createDataStructsCPU(numK, numX, &phiMag, &Qr, &Qi);
-  /* Create GPU data structures */
-  pb_SwitchToTimer(&timers, pb_TimerID_COPY)
-  //createDataStructsGPU(numK, numX, &phiMag, &Qr, &Qi)
-
-  // Allocating device variables
-  cuda_ret = cudaMalloc((void**) &phiMag_d, numK*sizeof(float));
-  if (cuda_ret != cudaSuccess) {
-      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
-      exit(EXIT_FAILURE);
-  }
-
-  cuda_ret = cudaMalloc((void**) &Qr_d, numX*sizeof(float));
-  if (cuda_ret != cudaSuccess) {
-      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
-      exit(EXIT_FAILURE);
-  }
-
-  cuda_ret = cudaMemset(Qr_d, 0, numX * sizeof(float));
-  if (cuda_ret != cudaSuccess) {
-      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
-      exit(EXIT_FAILURE);
-  }
-
-  cuda_ret = cudaMalloc((void**) &Qi_d, numX*sizeof(float));
-  if (cuda_ret != cudaSuccess) {
-      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
-      exit(EXIT_FAILURE);
-  }
-
-  cuda_ret = cudaMemset(Qi_d, 0, numX * sizeof(float));
-  if (cuda_ret != cudaSuccess) {
-      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
-      exit(EXIT_FAILURE);
-  }
-
-
-  //cudaDeviceSynchronize();
 
   ComputePhiMagCPU(numK, phiR, phiI, phiMag);
-  // TODO: Copy vars from host to device
-  //cudaDeviceSynchronize();
-
-  //ComputePhiMagGPU(numK, phiR, phiI, phiMag);
-  // cuda_ret = cudaDeviceSynchronize();
-	// if(cuda_ret != cudaSuccess) FATAL("Unable to launch kernel");
-
-  // TODO: Copy vars from device to host
-  //cudaDeviceSynchronize();
 
   kVals = (struct kValues*)calloc(numK, sizeof (struct kValues));
   int k;
@@ -168,16 +106,6 @@ main (int argc, char *argv[]) {
     kVals[k].PhiMag = phiMag[k];
   }
   ComputeQCPU(numK, numX, kVals, x, y, z, Qr, Qi);
-  // TODO: Copy vars from host to device 
-  //cudaDeviceSynchronize();
-
-  //ComputeQGPU(numK, numX, kVals, x, y, z, Qr, Qi);
-  // cuda_ret = cudaDeviceSynchronize();
-	// if(cuda_ret != cudaSuccess) FATAL("Unable to launch kernel");
-
-  // TODO: Copy vars from device to host
-  //cudaDeviceSynchronize();
-  
 
   if (params->outFile)
     {

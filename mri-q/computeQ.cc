@@ -32,7 +32,7 @@ ComputePhiMagCPU(int numK,
   }
 }
 
-//inline
+inline
 void
 ComputeQCPU(int numK, int numX,
             struct kValues *kVals,
