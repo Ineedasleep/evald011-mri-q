@@ -7,6 +7,9 @@ APP_CFLAGS=-O3 -funroll-all-loops -ffast-math
 APP_LDFLAGS=-lm -lstdc++
 LANGUAGE=c
 
+NVCC_FLAGS  = -O3 -I/usr/local/cuda/include
+LD_FLAGS    = -lcudart -L/usr/local/cuda/lib64
+
 default: $(EXE)
 
 main.o: main.c computeQ.cc parboil.h
