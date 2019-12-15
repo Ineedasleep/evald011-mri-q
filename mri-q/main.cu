@@ -35,6 +35,8 @@
 
 #include "file.h"
 #include "computeQ.cc"
+#include "computeQ.cu"
+#include "support.h"
 
 int
 main (int argc, char *argv[]) {
@@ -46,6 +48,12 @@ main (int argc, char *argv[]) {
   float *phiMag;		/* Magnitude of Phi */
   float *Qr, *Qi;		/* Q signal (complex) */
   struct kValues* kVals;
+
+  float *x_d, *y_d, *z_d; /* Device X coordinates (3D vectors) */
+  float *phiR_d, *phiI_d; /* Device Phi values (complex) */
+  float *phiMag_d; /* Device Phi Magnitude */
+  float *Qr_d, *Qi_d; /* Device Q signal (complex) */
+  struct kValues* kVals_d; /* Device K trajectory (3D vector + magnitude) */
 
   struct pb_Parameters *params;
   struct pb_TimerSet timers;
@@ -94,9 +102,23 @@ main (int argc, char *argv[]) {
 
   /* Create CPU data structures */
   createDataStructsCPU(numK, numX, &phiMag, &Qr, &Qi);
+  /* Create GPU data structures */  
+  pb_SwitchToTimer(&timers, pb_TimerID_COPY);
+  // Note: the below function also performs memcpys of x, y, z, phiR, and phiI
+  createDataStructsGPU(numK, numX, x, y, z, phiR, phiI, x_d, y_d, z_d, phiR_d, phiI_d, phiMag_d, Qr_d, Qi_d);
+  
+  //ComputePhiMagCPU(numK, phiR, phiI, phiMag);
+  pb_SwitchToTimer(&timers, pb_TimerID_KERNEL);
+  ComputePhiMagGPU(numK, phiR_d, phiI_d, phiMag_d);
+  pb_SwitchToTimer(&timers, pb_TimerID_COPY);
 
-  ComputePhiMagCPU(numK, phiR, phiI, phiMag);
+  cudaError_t cuda_ret = cudaMemcpy(phiMag, phiMag_d, numK*sizeof(float), cudaMemcpyDeviceToHost);
+  if (cuda_ret != cudaSuccess) {
+      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+  }
 
+  pb_SwitchToTimer(&timers, pb_TimerID_COMPUTE);
   kVals = (struct kValues*)calloc(numK, sizeof (struct kValues));
   int k;
   for (k = 0; k < numK; k++) {
@@ -105,7 +127,18 @@ main (int argc, char *argv[]) {
     kVals[k].Kz = kz[k];
     kVals[k].PhiMag = phiMag[k];
   }
+
+  // struct kValues* kVals_d; /* Device K trajectory (3D vector + magnitude) */
+  // Copying kVals to kVals_d
+  /*cuda_ret = cudaMemcpy(kVals_d, kVals, numK*sizeof(struct kValues), cudaMemcpyHostToDevice);
+  if (cuda_ret != cudaSuccess) {
+      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
+      exit(EXIT_FAILURE);
+  }*/
+
   ComputeQCPU(numK, numX, kVals, x, y, z, Qr, Qi);
+
+  //ComputeQGPU()
 
   if (params->outFile)
     {

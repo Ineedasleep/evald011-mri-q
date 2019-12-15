@@ -95,7 +95,9 @@ main (int argc, char *argv[]) {
   /* Create CPU data structures */
   createDataStructsCPU(numK, numX, &phiMag, &Qr, &Qi);
 
+  pb_SwitchToTimer(&timers, pb_TimerID_KERNEL);
   ComputePhiMagCPU(numK, phiR, phiI, phiMag);
+  pb_SwitchToTimer(&timers, pb_TimerID_COMPUTE);
 
   kVals = (struct kValues*)calloc(numK, sizeof (struct kValues));
   int k;

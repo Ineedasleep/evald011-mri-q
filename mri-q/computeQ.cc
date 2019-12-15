@@ -6,6 +6,9 @@
  *cr
  ***************************************************************************/
 
+#ifndef COMPUTEQ_CPU
+#define COMPUTEQ_CPU
+
 #define PI   3.1415926535897932384626433832795029f
 #define PIx2 6.2831853071795864769252867665590058f
 
@@ -79,3 +82,5 @@ void createDataStructsCPU(int numK, int numX, float** phiMag,
   *Qi = (float*) memalign(16, numX * sizeof (float));
   memset((void *)*Qi, 0, numX * sizeof(float));
 }
+
+#endif
