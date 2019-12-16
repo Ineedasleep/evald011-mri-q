@@ -53,7 +53,7 @@ main (int argc, char *argv[]) {
     return -1;
   }
 
-  float diffCheck = .00006;
+  float diffCheck = .0006;
 
   float max = 0.00;
   float diff = 0.00;
@@ -64,8 +64,8 @@ main (int argc, char *argv[]) {
     if(diff > max)
       max = diff;
     if(diff > diffCheck) {
-      printf("%f, %f, %d\n", Qr1[i], Qr2[i], i);
-      printf("diff too great found %f\n", diff);
+      printf("%f, %f, %d of %d\n", Qr1[i], Qr2[i], i, numX);
+      printf("Qr diff too great found %f\n", diff);
       return 2;
     }
     diff = Qi1[i] - Qi2[i];
@@ -74,8 +74,8 @@ main (int argc, char *argv[]) {
     if(diff > max)
       max = diff;
     if(diff > diffCheck) {
-      printf("%f, %f, %d\n", Qr1[i], Qr2[i], i);
-      printf("diff too great found %f\n", diff);
+      printf("%f, %f, %d of %d\n", Qi1[i], Qi2[i], i, numX);
+      printf("Qi diff too great found %f\n", diff);
       return 3;
     }
   }
