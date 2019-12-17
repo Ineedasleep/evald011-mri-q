@@ -113,18 +113,17 @@ main (int argc, char *argv[]) {
   ComputePhiMagCPU(numK, phiR, phiI, phiMag);
   
   /********** Testing process shows this is slower on GPU than CPU **********/
-  /*
-  pb_SwitchToTimer(&timers, pb_TimerID_KERNEL);
-  ComputePhiMagGPU(numK, phiR_d, phiI_d, phiMag_d);
-  pb_SwitchToTimer(&timers, pb_TimerID_COPY);
-
-  cuda_ret = cudaMemcpy(phiMag, phiMag_d, numK*sizeof(float), cudaMemcpyDeviceToHost);
-  if (cuda_ret != cudaSuccess) {
-      printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
-      exit(EXIT_FAILURE);
-  }
-  */
   
+  // pb_SwitchToTimer(&timers, pb_TimerID_KERNEL);
+  // ComputePhiMagGPU(numK, phiR_d, phiI_d, phiMag_d);
+  // pb_SwitchToTimer(&timers, pb_TimerID_COPY);
+
+  // cuda_ret = cudaMemcpy(phiMag, phiMag_d, numK*sizeof(float), cudaMemcpyDeviceToHost);
+  // if (cuda_ret != cudaSuccess) {
+  //     printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
+  //     exit(EXIT_FAILURE);
+  // }
+    
 
   //pb_SwitchToTimer(&timers, pb_TimerID_COMPUTE);
   kVals = (struct kValues*)calloc(numK, sizeof (struct kValues));
@@ -137,6 +136,7 @@ main (int argc, char *argv[]) {
   }
 
   // Copying kVals to kVals_d
+  pb_SwitchToTimer(&timers, pb_TimerID_COPY);
   cuda_ret = cudaMemcpy(kVals_d, kVals, numK*sizeof(struct kValues), cudaMemcpyHostToDevice);
   if (cuda_ret != cudaSuccess) {
       printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);
@@ -145,9 +145,10 @@ main (int argc, char *argv[]) {
 
   //ComputeQCPU(numK, numX, kVals, x, y, z, Qr, Qi);
 
-  
+  pb_SwitchToTimer(&timers, pb_TimerID_KERNEL);
   ComputeQGPU(numK, numX, kVals_d, x_d, y_d, z_d, Qr_d, Qi_d);
 
+  pb_SwitchToTimer(&timers, pb_TimerID_COPY);
   cuda_ret = cudaMemcpy(Qr, Qr_d, numX*sizeof(float), cudaMemcpyDeviceToHost);
   if (cuda_ret != cudaSuccess) {
       printf("%s in %s at line %d\n", cudaGetErrorString(cuda_ret), __FILE__, __LINE__);

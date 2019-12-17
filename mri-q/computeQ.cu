@@ -11,7 +11,7 @@
 //#include "parboil.h"
 
 #define MU_THREADS_PER_BLOCK 8192
-#define Q_THREADS_PER_BLOCK 256
+#define Q_THREADS_PER_BLOCK 512
 
 /************ Definitions from computeQ.cc ************
 #define PI   3.1415926535897932384626433832795029f
@@ -28,20 +28,6 @@ struct kValues {
 };
 */
 
-/* Original
-inline
-void 
-ComputePhiMagCPU(int numK, 
-                 float* phiR, float* phiI,
-                 float* __restrict__ phiMag) {
-  int indexK = 0;
-  for (indexK = 0; indexK < numK; indexK++) {
-    float real = phiR[indexK];
-    float imag = phiI[indexK];
-    phiMag[indexK] = real*real + imag*imag;
-  }
-}
-*/
 
 __global__
 void dev_ComputePhiMagGPU(const int numK, const float* phiR, const float* phiI, float* phiMag) {
